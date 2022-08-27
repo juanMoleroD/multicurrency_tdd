@@ -6,7 +6,7 @@ public class Multicurrency {
 }
 
 interface Expression {
-    Money reduce(String to);
+    Money reduce(Bank bank, String to);
 }
 
 class Money implements Expression {
@@ -43,10 +43,10 @@ class Money implements Expression {
         return new Money(amount, "CHF");
     }
 
-    public Money reduce(String to){
-        return this;
+    public Money reduce(Bank bank, String to){
+        int rate = bank.rate(currency, to);
+        return new Money(amount/rate, to);
     }
-
 
 
     public String toString() {
@@ -64,7 +64,7 @@ class Sum implements Expression{
         this.addend = addend;
     }
 
-    public Money reduce(String to){
+    public Money reduce(Bank bank, String to){
         int amount = augend.amount + addend.amount;
         return new Money(amount, to);
     }
@@ -73,9 +73,14 @@ class Sum implements Expression{
 
 class Bank {
     Money reduce(Expression source, String to) {
-        return source.reduce(to);
+        return source.reduce(this, to);
     }
 
+    int rate(String from, String to) {
+        return (from.equals("CHF") && to.equals("USD"))
+                ? 2
+                : 1;
+    }
 }
 
 
